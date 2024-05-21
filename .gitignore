@@ -3,3 +3,5 @@ brazil
 configstore
 gcloud
 .mono
+*.fish
+iterm2
