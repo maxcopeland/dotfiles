@@ -1,5 +1,8 @@
 return {
   {
+    "hashivim/vim-terraform"
+  },
+  {
     "hrsh7th/cmp-nvim-lsp"
   },
   {
