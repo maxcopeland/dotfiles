@@ -21,6 +21,7 @@ return {
       lspconfig.pyright.setup({ capabilities })
       lspconfig.terraformls.setup({ capabilities })
       lspconfig.tflint.setup({ capabilities })
+      lspconfig.rust_analyzer.setup({ capabilities })
 
       vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
       vim.keymap.set("n", "gD", vim.lsp.buf.definition, {})
