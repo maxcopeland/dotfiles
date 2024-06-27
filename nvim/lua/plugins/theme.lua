@@ -17,8 +17,11 @@ return {
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
     end,
+    config = function()
+      local opts = {
+        transparent_background = true,
+      }
+      require('catppuccin').setup(opts)
+    end,
   },
-
-  -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 }
