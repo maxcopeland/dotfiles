@@ -190,6 +190,29 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Toggle a split terminal
+local function toggle_split_terminal()
+  -- If terminal is open, close it. Otherwise open a split terminal.
+
+  -- Check if the terminal is open
+  local terminal = vim.fn.bufwinnr 'term://*'
+  if terminal ~= -1 then
+    -- Terminal is open, close it
+    -- See `:help :q` for more information
+    vim.cmd(terminal .. 'q')
+  else
+    -- Terminal is not open, open a new split terminal
+    -- See `:help :terminal`
+    vim.cmd '25split | set nonumber | terminal'
+    vim.cmd 'startinsert'
+
+    -- Call split with 20 height with no line numbers
+  end
+end
+
+-- vim.api.nvim_set_keymap('n', '<leader>tt', ':lua toggle_split_terminal()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>tt', toggle_split_terminal, { desc = 'Toggle a split [T]erminal' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
