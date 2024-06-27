@@ -3,6 +3,7 @@
 eval "$(starship init bash)"
 
 alias ls='ls -lh'
+alias tf='terraform'
 alias python='python3'
 export BASH_SILENCE_DEPRECATION_WARNING=1
 
