@@ -1,5 +1,5 @@
 "$schema" = 'https://starship.rs/config-schema.json'
-command_timeout = 10000
+command_timeout = 500
 
 format = """
 [](peach)\
@@ -113,7 +113,7 @@ truncation_symbol = "…/"
 "Downloads" = " "
 "Music" = "󰝚 "
 "Pictures" = " "
-"projects" = "󰲋 "
+"Projects" = "󰲋 "
 
 [git_branch]
 symbol = ""
