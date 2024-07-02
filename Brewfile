@@ -1,7 +1,6 @@
 tap "aws/tap"
 tap "hashicorp/tap"
 tap "homebrew/bundle"
-tap "homebrew/cask-fonts"
 brew "libtiff"
 brew "little-cms2"
 brew "webp"
