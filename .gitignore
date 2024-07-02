@@ -6,3 +6,4 @@ gcloud
 *.fish
 iterm2
 iterm2
+.config/github-copilot
