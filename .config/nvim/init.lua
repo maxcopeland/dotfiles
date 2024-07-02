@@ -203,7 +203,7 @@ local function toggle_split_terminal()
   else
     -- Terminal is not open, open a new split terminal
     -- See `:help :terminal`
-    vim.cmd '25split | set nonumber | terminal'
+    vim.cmd '25split | set nonumber | terminal bash --login'
     vim.cmd 'startinsert'
 
     -- Call split with 20 height with no line numbers
