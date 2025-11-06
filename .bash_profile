@@ -2,6 +2,9 @@
 [[ -f "${HOME}/Library/Application Support/amazon-q/shell/bash_profile.pre.bash" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/bash_profile.pre.bash"
 eval "$(starship init bash)"
 
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
 alias ls='ls -lh'
 alias tf='terraform'
 alias python='python3'

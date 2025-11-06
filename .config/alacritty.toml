@@ -1,3 +1,13 @@
+window.padding.x = 4
+window.padding.y = 10
+
+window.opacity = 0.9
+
+font.size = 14.0
+font.normal.family = "JetBrainsMono Nerd Font"
+font.normal.style = "Regular"
+
+[general]
 import = [
   # uncomment the flavour you want below:
   #"~/.config/alacritty/catppuccin-latte.toml"
@@ -5,11 +15,3 @@ import = [
   # "~/.config/alacritty/catppuccin-macchiato.toml"
   "~/.config/alacritty/catppuccin-mocha.toml"
 ]
-window.padding.x = 4
-window.padding.y = 10
-
-font.size = 14.0
-font.normal.family = "JetBrainsMono Nerd Font"
-font.normal.style = "Regular"
-
-window.opacity = 0.9
