@@ -14,4 +14,12 @@ mkdir -p ~/.config
 ln -sf ~/dotfiles/.config/alacritty ~/.config/alacritty
 ln -sf ~/dotfiles/.config/nvim ~/.config/nvim
 
+# Install VS Code extensions
+if command -v code &> /dev/null; then
+    echo "Installing VS Code extensions..."
+    cat ~/dotfiles/.config/vscode/extensions.txt | grep -v '^#' | grep -v '^$' | xargs -L 1 code --install-extension
+else
+    echo "VS Code not found. Skipping extension installation."
+fi
+
 echo "Setup complete. Run 'tmux' then 'prefix + I' to install tmux plugins."

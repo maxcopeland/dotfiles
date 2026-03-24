@@ -1,0 +1,10 @@
+# VS Code Extensions
+# Install with: cat extensions.txt | xargs -L 1 code --install-extension
+
+# AI Assistants
+saoudrizwan.claude-dev
+
+# Optional: Other useful extensions
+# vscodevim.vim
+# ms-python.python
+# ms-vscode.cpptools
