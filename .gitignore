@@ -1,3 +1,7 @@
+# Known credential/cache dirs that could land under .config before the
+# stow migration is complete on a given machine. Defense in depth only -
+# the real fix is that .config is a real dir with individual tool
+# subdirs symlinked in, so untracked tool state never lives in the repo.
 Amazon
 brazil
 configstore
@@ -5,5 +9,16 @@ gcloud
 .mono
 *.fish
 iterm2
-iterm2
 .config/github-copilot
+.config/k3d
+.config/mpv
+.config/mlflow
+
+# gh CLI can write oauth_token in plaintext here depending on config;
+# config.yml (prefs only, no secrets) stays tracked.
+.config/gh/hosts.yml
+
+# Claude Code's own per-project permission cache for this repo -
+# not a dotfile to distribute, and must never be stowed into
+# ~/.claude/settings.local.json (that's a different, global file).
+.claude/

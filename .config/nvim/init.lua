@@ -191,22 +191,33 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- Toggle a split terminal
+-- Reuses a single terminal buffer instead of spawning a new one (and
+-- leaking the old one's shell process) on every toggle; closing kills
+-- the shell rather than just hiding the window.
+local split_terminal_buf = nil
+
 local function toggle_split_terminal()
-  -- If terminal is open, close it. Otherwise open a split terminal.
+  local buf_valid = split_terminal_buf and vim.api.nvim_buf_is_valid(split_terminal_buf)
+  local win = buf_valid and vim.fn.bufwinid(split_terminal_buf) or -1
 
-  -- Check if the terminal is open
-  local terminal = vim.fn.bufwinnr 'term://*'
-  if terminal ~= -1 then
-    -- Terminal is open, close it
-    -- See `:help :q` for more information
-    vim.cmd(terminal .. 'q')
-  else
-    -- Terminal is not open, open a new split terminal
-    -- See `:help :terminal`
-    vim.cmd '25split | set nonumber | terminal bash --login'
+  if win ~= -1 then
+    -- Terminal is visible: close the window and kill the shell
+    vim.api.nvim_win_close(win, true)
+    vim.fn.jobstop(vim.b[split_terminal_buf].terminal_job_id)
+    vim.api.nvim_buf_delete(split_terminal_buf, { force = true })
+    split_terminal_buf = nil
+  elseif buf_valid then
+    -- Terminal was closed some other way (e.g. plain :q); reopen the same
+    -- buffer instead of leaking a new one
+    vim.cmd '25split'
+    vim.api.nvim_win_set_buf(0, split_terminal_buf)
+    vim.wo.number = false
     vim.cmd 'startinsert'
-
-    -- Call split with 20 height with no line numbers
+  else
+    -- No terminal yet: open a new split terminal
+    vim.cmd '25split | set nonumber | terminal bash --login'
+    split_terminal_buf = vim.api.nvim_get_current_buf()
+    vim.cmd 'startinsert'
   end
 end
 

@@ -1,23 +1,41 @@
 #!/bin/bash
+set -euo pipefail
 
-# Create symlinks for config files
-ln -sf ~/dotfiles/.config/tmux/tmux.conf ~/.tmux.conf
-ln -sf ~/dotfiles/.bash_profile ~/.bash_profile
+DOTFILES_DIR="$HOME/dotfiles"
+cd "$DOTFILES_DIR"
 
-# Install TPM if not already installed
-if [ ! -d ~/.tmux/plugins/tpm ]; then
-    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+if ! command -v brew &> /dev/null; then
+    echo "Homebrew not found. Install it first: https://brew.sh/" >&2
+    exit 1
 fi
 
-# Create .config directory and symlinks
-mkdir -p ~/.config
-ln -sf ~/dotfiles/.config/alacritty ~/.config/alacritty
-ln -sf ~/dotfiles/.config/nvim ~/.config/nvim
+echo "Installing Homebrew packages..."
+brew bundle install
 
-# Install VS Code extensions
+# ~/.config must be a real directory, not one big symlink into this repo -
+# otherwise every tool that writes there (gcloud, gh, etc.) would write
+# straight into the git working tree. mkdir'ing these paths first forces
+# stow to symlink individual files/dirs into them instead of folding the
+# whole directory into a single symlink. gh mixes tracked config (config.yml)
+# with untracked runtime secrets (hosts.yml), so it needs this explicitly;
+# other tools that only ever touch ~/.config/<toolname> and never overlap
+# with a tracked path don't.
+mkdir -p "$HOME/.config"
+mkdir -p "$HOME/.config/gh"
+
+echo "Symlinking dotfiles..."
+stow --restow --target="$HOME" --dir="$DOTFILES_DIR" .
+
+# tmux.conf expects tpm here; tpm then self-manages the other plugins
+# declared in tmux.conf alongside itself on the next 'prefix + I'.
+if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+    echo "Installing tpm..."
+    git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+fi
+
 if command -v code &> /dev/null; then
     echo "Installing VS Code extensions..."
-    cat ~/dotfiles/.config/vscode/extensions.txt | grep -v '^#' | grep -v '^$' | xargs -L 1 code --install-extension
+    grep -v '^#' "$DOTFILES_DIR/.config/vscode/extensions.txt" | grep -v '^$' | xargs -L 1 code --install-extension
 else
     echo "VS Code not found. Skipping extension installation."
 fi
