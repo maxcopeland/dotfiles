@@ -26,6 +26,13 @@ mkdir -p "$HOME/.config/gh"
 echo "Symlinking dotfiles..."
 stow --restow --target="$HOME" --dir="$DOTFILES_DIR" .
 
+# bin/ is excluded from the stow package (see .stow-local-ignore) because it
+# doesn't mirror a $HOME path - ~/.local already holds real, unrelated
+# content (uv/pipx installs, the Claude Code binary, ...) that a whole-dir
+# symlink would risk shadowing. Link the one script in directly instead.
+mkdir -p "$HOME/.local/bin"
+ln -sf "$DOTFILES_DIR/bin/tmux-sessionizer" "$HOME/.local/bin/tmux-sessionizer"
+
 # tmux.conf expects tpm here; tpm then self-manages the other plugins
 # declared in tmux.conf alongside itself on the next 'prefix + I'.
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
