@@ -18,6 +18,15 @@ return {
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
+      -- Browse the filesystem as an editable buffer, opened on demand
+      -- instead of a permanent sidebar - '-' opens the parent directory
+      -- of the current file (same convention as oil.nvim). Rename a file
+      -- by editing its line, delete with dd + :w, q to close.
+      require('mini.files').setup()
+      vim.keymap.set('n', '-', function()
+        require('mini.files').open(vim.api.nvim_buf_get_name(0), false)
+      end, { desc = 'Open parent directory (mini.files)' })
+
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
