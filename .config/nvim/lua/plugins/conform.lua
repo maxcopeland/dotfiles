@@ -27,8 +27,10 @@ return {
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        python = { 'isort', 'black' },
+        -- ruff_fix applies lint autofixes (including import sorting),
+        -- ruff_format formats - matches `ruff check --fix` + `ruff format`,
+        -- which is what most modern Python projects run in pre-commit/CI.
+        python = { 'ruff_fix', 'ruff_format' },
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.

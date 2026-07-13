@@ -23,6 +23,7 @@ return {
 
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
+    'mfussenegger/nvim-dap-python',
   },
   config = function()
     local dap = require 'dap'
@@ -42,6 +43,7 @@ return {
       ensure_installed = {
         -- Update this to ensure that you have the debuggers for the langs you want
         'delve',
+        'debugpy',
       },
     }
 
@@ -92,5 +94,10 @@ return {
         detached = vim.fn.has 'win32' == 0,
       },
     }
+
+    -- Python debugging via debugpy (installed by mason above). Points at
+    -- mason's own copy rather than a per-project .venv, so it works
+    -- regardless of which venv is active for the file you're debugging.
+    require('dap-python').setup(vim.fn.stdpath 'data' .. '/mason/packages/debugpy/venv/bin/python')
   end,
 }
