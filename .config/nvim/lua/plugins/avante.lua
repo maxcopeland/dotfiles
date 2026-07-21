@@ -5,15 +5,18 @@ return {
     event = 'VeryLazy',
     version = false, -- track main; avante ships frequently and pins break new providers
     opts = {
-      provider = 'claude',
-      auto_suggestions_provider = 'claude',
+      -- Copilot is the default: Claude's auth_type = "max" OAuth (below) hits
+      -- an unresolved upstream 429 on token exchange for third-party tools
+      -- (github.com/yetone/avante.nvim, github.com/anomalyco/opencode#18329).
+      -- Claude work happens in the Claude Code CLI instead (<leader>tc).
+      -- The claude provider is left configured so `:AvanteSwitchProvider
+      -- claude` can be retried later if/when that upstream issue clears.
+      provider = 'copilot',
+      auto_suggestions_provider = 'copilot',
       providers = {
         claude = {
           endpoint = 'https://api.anthropic.com',
           model = 'claude-sonnet-5',
-          -- Browser OAuth against your Claude Pro/Max subscription instead of
-          -- a pay-per-token API key. Run `:AvanteSwitchProvider claude` after
-          -- install to kick off the login if it doesn't prompt automatically.
           auth_type = 'max',
           extra_request_body = {
             temperature = 0.75,

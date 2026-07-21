@@ -190,39 +190,50 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
--- Toggle a split terminal
+-- Toggle a split terminal running a given command.
 -- Reuses a single terminal buffer instead of spawning a new one (and
 -- leaking the old one's shell process) on every toggle; closing kills
--- the shell rather than just hiding the window.
-local split_terminal_buf = nil
+-- the job rather than just hiding the window. Each call site gets its
+-- own buffer slot via closure, so separate terminals (shell, Claude
+-- Code) can be toggled independently.
+local function make_split_terminal_toggle(cmd)
+  local buf = nil
 
-local function toggle_split_terminal()
-  local buf_valid = split_terminal_buf and vim.api.nvim_buf_is_valid(split_terminal_buf)
-  local win = buf_valid and vim.fn.bufwinid(split_terminal_buf) or -1
+  return function()
+    local buf_valid = buf and vim.api.nvim_buf_is_valid(buf)
+    local win = buf_valid and vim.fn.bufwinid(buf) or -1
 
-  if win ~= -1 then
-    -- Terminal is visible: close the window and kill the shell
-    vim.api.nvim_win_close(win, true)
-    vim.fn.jobstop(vim.b[split_terminal_buf].terminal_job_id)
-    vim.api.nvim_buf_delete(split_terminal_buf, { force = true })
-    split_terminal_buf = nil
-  elseif buf_valid then
-    -- Terminal was closed some other way (e.g. plain :q); reopen the same
-    -- buffer instead of leaking a new one
-    vim.cmd '25split'
-    vim.api.nvim_win_set_buf(0, split_terminal_buf)
-    vim.wo.number = false
-    vim.cmd 'startinsert'
-  else
-    -- No terminal yet: open a new split terminal
-    vim.cmd '25split | set nonumber | terminal bash --login'
-    split_terminal_buf = vim.api.nvim_get_current_buf()
-    vim.cmd 'startinsert'
+    if win ~= -1 then
+      -- Terminal is visible: close the window and kill the job
+      vim.api.nvim_win_close(win, true)
+      vim.fn.jobstop(vim.b[buf].terminal_job_id)
+      vim.api.nvim_buf_delete(buf, { force = true })
+      buf = nil
+    elseif buf_valid then
+      -- Terminal was closed some other way (e.g. plain :q); reopen the same
+      -- buffer instead of leaking a new one
+      vim.cmd '25split'
+      vim.api.nvim_win_set_buf(0, buf)
+      vim.wo.number = false
+      vim.cmd 'startinsert'
+    else
+      -- No terminal yet: open a new split terminal
+      vim.cmd('25split | set nonumber | terminal ' .. cmd)
+      buf = vim.api.nvim_get_current_buf()
+      vim.cmd 'startinsert'
+    end
   end
 end
 
--- vim.api.nvim_set_keymap('n', '<leader>tt', ':lua toggle_split_terminal()<CR>', { noremap = true, silent = true })
+local toggle_split_terminal = make_split_terminal_toggle 'bash --login'
 vim.keymap.set('n', '<leader>tt', toggle_split_terminal, { desc = 'Toggle a split [T]erminal' })
+
+-- Claude Code CLI in its own split, since Claude runs there (official,
+-- subscription-authenticated client) rather than through Avante's Claude
+-- provider, which hits an unresolved OAuth token-exchange 429 for
+-- third-party tools.
+local toggle_claude_terminal = make_split_terminal_toggle 'claude'
+vim.keymap.set('n', '<leader>tc', toggle_claude_terminal, { desc = 'Toggle [C]laude Code terminal' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
