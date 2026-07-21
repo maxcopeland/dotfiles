@@ -11,13 +11,20 @@ return {
         claude = {
           endpoint = 'https://api.anthropic.com',
           model = 'claude-sonnet-5',
+          -- Browser OAuth against your Claude Pro/Max subscription instead of
+          -- a pay-per-token API key. Run `:AvanteSwitchProvider claude` after
+          -- install to kick off the login if it doesn't prompt automatically.
+          auth_type = 'max',
           extra_request_body = {
             temperature = 0.75,
             max_tokens = 8192,
           },
         },
         copilot = {
-          model = 'gpt-5',
+          -- No model override: available Copilot models depend on your plan
+          -- and change over time. Use `<leader>a?` (:AvanteModels) to pick
+          -- one interactively; browser device-flow auth is handled by
+          -- copilot.lua's own `:Copilot auth`, same as Claude's auth_type = "max".
         },
       },
       behaviour = {
