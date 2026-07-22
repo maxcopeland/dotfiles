@@ -2,17 +2,13 @@ return {
   {
     'yetone/avante.nvim',
     build = 'make',
-    -- Load only on explicit invocation, not eagerly at startup: both
-    -- configured providers are currently broken upstream (Claude's
-    -- auth_type = "max" hits an unresolved 429 on token exchange; Copilot's
-    -- auth check fails outright since copilot.lua now stores its token in
-    -- an encrypted auth.db that avante's provider can't read, see
-    -- github.com/yetone/avante.nvim/issues/3121). `setup()` validates the
-    -- default provider's auth immediately, so loading this eagerly (e.g.
-    -- via `event = "VeryLazy"`) throws an error on every single startup.
-    -- Staying dormant until called avoids that; Claude Code CLI
-    -- (<leader>tc) and copilot.vim's inline completions are the working
-    -- path in the meantime.
+    -- Load only on explicit invocation, not eagerly at startup. The default
+    -- provider (copilot-cli, below) is ACP-based and safe to load eagerly
+    -- (setup() skips auth validation entirely for ACP providers), but the
+    -- REST-based `claude` provider (auth_type = "max") still hits an
+    -- unresolved 429 on token exchange if ever selected via
+    -- :AvanteSwitchProvider, so staying cmd/keys-lazy avoids any surprise at
+    -- startup regardless of which provider is active.
     cmd = {
       'AvanteAsk',
       'AvanteChat',
@@ -55,14 +51,32 @@ return {
     },
     version = false, -- track main; avante ships frequently and pins break new providers
     opts = {
-      -- Copilot is the default: Claude's auth_type = "max" OAuth (below) hits
-      -- an unresolved upstream 429 on token exchange for third-party tools
-      -- (github.com/yetone/avante.nvim, github.com/anomalyco/opencode#18329).
-      -- Claude work happens in the Claude Code CLI instead (<leader>tc).
-      -- The claude provider is left configured so `:AvanteSwitchProvider
-      -- claude` can be retried later if/when that upstream issue clears.
-      provider = 'copilot',
-      auto_suggestions_provider = 'copilot',
+      -- copilot-cli is the default: avante's REST-based `copilot` provider
+      -- (below) reads its OAuth token from copilot.lua's legacy
+      -- hosts.json/apps.json files, but copilot.lua now stores auth in an
+      -- encrypted auth.db instead (github.com/yetone/avante.nvim/issues/3121,
+      -- unresolved). The GitHub Copilot CLI (`copilot`, installed via
+      -- `npm i -g @github/copilot`) natively supports `--acp` (Agent Client
+      -- Protocol), so avante can drive it as a subprocess instead of reading
+      -- its token directly -- same trick avante's own default config already
+      -- uses for the `claude-code` ACP entry. This sidesteps the auth.db
+      -- issue entirely and reuses whatever session `copilot` is already
+      -- logged into (`<leader>tg` then `/login` if needed).
+      --
+      -- Claude's auth_type = "max" OAuth hits a separate unresolved upstream
+      -- 429 on token exchange for third-party tools (avante's own issue
+      -- tracker, github.com/anomalyco/opencode#18329); Claude work happens in
+      -- the Claude Code CLI instead (<leader>tc). Both the claude and
+      -- REST-based copilot providers are left configured so either path can
+      -- be retried via `:AvanteSwitchProvider` if/when those upstream issues
+      -- clear.
+      provider = 'copilot-cli',
+      acp_providers = {
+        ['copilot-cli'] = {
+          command = 'copilot',
+          args = { '--acp' },
+        },
+      },
       providers = {
         claude = {
           endpoint = 'https://api.anthropic.com',
