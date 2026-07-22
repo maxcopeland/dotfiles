@@ -2,7 +2,57 @@ return {
   {
     'yetone/avante.nvim',
     build = 'make',
-    event = 'VeryLazy',
+    -- Load only on explicit invocation, not eagerly at startup: both
+    -- configured providers are currently broken upstream (Claude's
+    -- auth_type = "max" hits an unresolved 429 on token exchange; Copilot's
+    -- auth check fails outright since copilot.lua now stores its token in
+    -- an encrypted auth.db that avante's provider can't read, see
+    -- github.com/yetone/avante.nvim/issues/3121). `setup()` validates the
+    -- default provider's auth immediately, so loading this eagerly (e.g.
+    -- via `event = "VeryLazy"`) throws an error on every single startup.
+    -- Staying dormant until called avoids that; Claude Code CLI
+    -- (<leader>tc) and copilot.vim's inline completions are the working
+    -- path in the meantime.
+    cmd = {
+      'AvanteAsk',
+      'AvanteChat',
+      'AvanteChatNew',
+      'AvanteToggle',
+      'AvanteBuild',
+      'AvanteEdit',
+      'AvanteRefresh',
+      'AvanteFocus',
+      'AvanteSwitchProvider',
+      'AvanteSwitchSelectorProvider',
+      'AvanteSwitchInputProvider',
+      'AvanteClear',
+      'AvanteShowRepoMap',
+      'AvanteModels',
+      'AvanteACPModels',
+      'AvanteACPModes',
+      'AvanteHistory',
+      'AvanteStop',
+    },
+    keys = {
+      '<leader>aa',
+      '<leader>an',
+      '<leader>az',
+      '<leader>ae',
+      '<leader>ar',
+      '<leader>af',
+      '<leader>aS',
+      '<leader>at',
+      '<leader>ad',
+      '<leader>aC',
+      '<leader>as',
+      '<leader>aR',
+      '<leader>ac',
+      '<leader>aB',
+      '<leader>a?',
+      '<leader>ah',
+      '<leader>aM',
+      '<leader>am',
+    },
     version = false, -- track main; avante ships frequently and pins break new providers
     opts = {
       -- Copilot is the default: Claude's auth_type = "max" OAuth (below) hits
