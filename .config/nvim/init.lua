@@ -196,7 +196,13 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- the job rather than just hiding the window. Each call site gets its
 -- own buffer slot via closure, so separate terminals (shell, Claude
 -- Code) can be toggled independently.
-local function make_split_terminal_toggle(cmd)
+---@param cmd string
+---@param opts { vertical?: boolean, size?: integer }?
+local function make_split_terminal_toggle(cmd, opts)
+  opts = opts or {}
+  local vertical = opts.vertical or false
+  local size = opts.size or (vertical and 100 or 25)
+  local split_cmd = size .. (vertical and 'vsplit' or 'split')
   local buf = nil
 
   return function()
@@ -212,13 +218,13 @@ local function make_split_terminal_toggle(cmd)
     elseif buf_valid then
       -- Terminal was closed some other way (e.g. plain :q); reopen the same
       -- buffer instead of leaking a new one
-      vim.cmd '25split'
+      vim.cmd(split_cmd)
       vim.api.nvim_win_set_buf(0, buf)
       vim.wo.number = false
       vim.cmd 'startinsert'
     else
       -- No terminal yet: open a new split terminal
-      vim.cmd('25split | set nonumber | terminal ' .. cmd)
+      vim.cmd(split_cmd .. ' | set nonumber | terminal ' .. cmd)
       buf = vim.api.nvim_get_current_buf()
       vim.cmd 'startinsert'
     end
@@ -228,17 +234,17 @@ end
 local toggle_split_terminal = make_split_terminal_toggle 'bash --login'
 vim.keymap.set('n', '<leader>tt', toggle_split_terminal, { desc = 'Toggle a split [T]erminal' })
 
--- Claude Code CLI in its own split, since Claude runs there (official,
--- subscription-authenticated client) rather than through Avante's Claude
--- provider, which hits an unresolved OAuth token-exchange 429 for
--- third-party tools.
-local toggle_claude_terminal = make_split_terminal_toggle 'claude'
+-- Claude Code CLI in its own vertical split, since Claude runs there
+-- (official, subscription-authenticated client) rather than through
+-- Avante's Claude provider, which hits an unresolved OAuth token-exchange
+-- 429 for third-party tools.
+local toggle_claude_terminal = make_split_terminal_toggle('claude', { vertical = true })
 vim.keymap.set('n', '<leader>tc', toggle_claude_terminal, { desc = 'Toggle [C]laude Code terminal' })
 
 -- GitHub Copilot CLI (github/copilot-cli): same agentic terminal workflow as
 -- Claude Code, but goes over GitHub's infrastructure rather than Anthropic's
 -- -- useful as a fallback when the corporate VPN blocks Claude.
-local toggle_copilot_terminal = make_split_terminal_toggle 'copilot'
+local toggle_copilot_terminal = make_split_terminal_toggle('copilot', { vertical = true })
 vim.keymap.set('n', '<leader>tg', toggle_copilot_terminal, { desc = 'Toggle [G]itHub Copilot CLI terminal' })
 
 -- [[ Basic Autocommands ]]
