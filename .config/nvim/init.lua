@@ -235,6 +235,12 @@ vim.keymap.set('n', '<leader>tt', toggle_split_terminal, { desc = 'Toggle a spli
 local toggle_claude_terminal = make_split_terminal_toggle 'claude'
 vim.keymap.set('n', '<leader>tc', toggle_claude_terminal, { desc = 'Toggle [C]laude Code terminal' })
 
+-- GitHub Copilot CLI (github/copilot-cli): same agentic terminal workflow as
+-- Claude Code, but goes over GitHub's infrastructure rather than Anthropic's
+-- -- useful as a fallback when the corporate VPN blocks Claude.
+local toggle_copilot_terminal = make_split_terminal_toggle 'copilot'
+vim.keymap.set('n', '<leader>tg', toggle_copilot_terminal, { desc = 'Toggle [G]itHub Copilot CLI terminal' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
