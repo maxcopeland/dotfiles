@@ -203,6 +203,13 @@ local function make_split_terminal_toggle(cmd, opts)
   local vertical = opts.vertical or false
   local size = opts.size or (vertical and 100 or 25)
   local split_cmd = size .. (vertical and 'vsplit' or 'split')
+  -- persist = true: closing just hides the window, job/buffer keep running,
+  -- so a long-running interactive session (an agent CLI) survives being
+  -- toggled away and back - same idea as Avante's sidebar toggle preserving
+  -- its conversation. Default (false) kills the job on close instead, which
+  -- is right for a throwaway scratch shell: nothing there is worth keeping,
+  -- and killing it avoids leaking idle processes.
+  local persist = opts.persist or false
   local buf = nil
 
   return function()
@@ -210,14 +217,16 @@ local function make_split_terminal_toggle(cmd, opts)
     local win = buf_valid and vim.fn.bufwinid(buf) or -1
 
     if win ~= -1 then
-      -- Terminal is visible: close the window and kill the job
       vim.api.nvim_win_close(win, true)
-      vim.fn.jobstop(vim.b[buf].terminal_job_id)
-      vim.api.nvim_buf_delete(buf, { force = true })
-      buf = nil
+      if not persist then
+        vim.fn.jobstop(vim.b[buf].terminal_job_id)
+        vim.api.nvim_buf_delete(buf, { force = true })
+        buf = nil
+      end
     elseif buf_valid then
-      -- Terminal was closed some other way (e.g. plain :q); reopen the same
-      -- buffer instead of leaking a new one
+      -- Buffer already exists, either hidden (persist=true) or closed some
+      -- other way (e.g. plain :q) - reopen the same buffer instead of
+      -- leaking a new one
       vim.cmd(split_cmd)
       vim.api.nvim_win_set_buf(0, buf)
       vim.wo.number = false
@@ -237,14 +246,16 @@ vim.keymap.set('n', '<leader>tt', toggle_split_terminal, { desc = 'Toggle a spli
 -- Claude Code CLI in its own vertical split, since Claude runs there
 -- (official, subscription-authenticated client) rather than through
 -- Avante's Claude provider, which hits an unresolved OAuth token-exchange
--- 429 for third-party tools.
-local toggle_claude_terminal = make_split_terminal_toggle('claude', { vertical = true })
+-- 429 for third-party tools. persist = true so toggling away and back
+-- doesn't kill the session mid-conversation.
+local toggle_claude_terminal = make_split_terminal_toggle('claude', { vertical = true, persist = true })
 vim.keymap.set('n', '<leader>tc', toggle_claude_terminal, { desc = 'Toggle [C]laude Code terminal' })
 
 -- GitHub Copilot CLI (github/copilot-cli): same agentic terminal workflow as
 -- Claude Code, but goes over GitHub's infrastructure rather than Anthropic's
--- -- useful as a fallback when the corporate VPN blocks Claude.
-local toggle_copilot_terminal = make_split_terminal_toggle('copilot', { vertical = true })
+-- -- useful as a fallback when the corporate VPN blocks Claude. persist =
+-- true for the same reason as the Claude terminal above.
+local toggle_copilot_terminal = make_split_terminal_toggle('copilot', { vertical = true, persist = true })
 vim.keymap.set('n', '<leader>tg', toggle_copilot_terminal, { desc = 'Toggle [G]itHub Copilot CLI terminal' })
 
 -- [[ Basic Autocommands ]]
